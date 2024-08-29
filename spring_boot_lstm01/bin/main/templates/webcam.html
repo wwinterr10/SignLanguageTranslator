@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>웹캠</title>
+<script type= "text/javascript">
+function camera_start() {
+	//카메라 화면을 출력할 객체를 변수 video에 저장
+	//document.getElementById("webCamera") : id 속성이 webCamera인 객체
+	var video = document.getElementById("webCamera");
+	
+	//navigator.mediaDevices.getUserMedia : 카메라 준비가 완료 되면 true
+	if (navigator.mediaDevices.getUserMedia) {
+		//video 변수에 카메라 화면을 출력하도록 설정
+		navigator.mediaDevices.getUserMedia({ video: true })
+		
+		.then(function (stream) { //설정이 완료 되면 비디오 화면이 stream 변수에 저장
+			//비디오 화면이 저장된 stream을 video변수에 출력
+			video.srcObject = stream;
+		});
+	}
+}
+//웹캠 화면을 canvas에 출력하는 함수
+function drawImge(){
+	//document.getElementById("webCamera"): id 속성이 webCamera인 객체를 변수 video에 저장
+	var video = document.getElementById("webCamera");
+	
+	//카메라 화면을 가져와서 박스와 텍스트를 추가해서 출력할 객체
+	// document.getElementById("videoCanvas") : id 속성이 videoCanvas인 객체를 변수 canvas 에 저장
+	var canvas = document.getElementById("videoCanvas");
+	
+	//canvas.getContext('2d') : canvas에 박스 텍스트를 그릴 객체를 변수 ctx에 저장
+	var ctx = canvas.getContext('2d');
+	
+	//video.videoWidth : 카메라 화면의 가로 크기
+	//canvas.width : canvas의 가로 크기로 설정
+	canvas.width = video.videoWidth;
+	
+	//video.videoHeight : 카메라 화면의 세로 크기
+	//canvas.height : canvas의 세로 크기로 설정
+	canvas.height = video.videoHeight;
+	
+	//video 화면을 canvas에 출력
+	//ctx.drawImage(video, x좌표, y좌표, 가로크기, 세로크기);
+	ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+	
+	//글자색
+	ctx.fillStyle = "blue";
+	ctx.lineWidth = 1; //텍스트 외각선의 굵기를 1픽셀로 설정
+	ctx.font = "20px arial" ; //20픽셀로 arial 글씨체를 적용
+	//(20,40) 중심에 "LSTM 예측 결과 출력 할 겁니다" 라는 텍스트 그림
+	ctx.fillText ( "LSTM 예측 결과 출력 할 겁니다" ,20,40);
+	
+	//1초 (1000) 에 24번 실행 drawImage 함수 실행
+	setTimeout(drawImge , 1000/24);
+}
+</script>
+</head>
+<body onload="camera_start()">
+	<h3>webcam.html</h3>
+	<!-- /*
+	 웹 카메라를 출력할 객체
+	 autoplay="true" : 웹 카메라 출력 자동 시작
+	 
+	 style="display: none" 화면에 출력 안함
+	 */-->
+	 
+	 <video autoplay="true" id="webCamera" style="display: none"></video><br/>
+	 
+	 <!--/*
+	 	웹 카메라 화면을 출력하는 id속성 webCamera 객체의 화면을 가져와서
+	 	한번 더 출력할 객체
+	 */-->
+	 <canvas id="videoCanvas" style="background-color: green;"></canvas>
+	 
+	 <script type="text/javascript">
+	 //카메라 화면을 출력할 객체를 변수 video에 저장
+	 //document.getElementById("webCamera") : id 속성이 webCamera인 객체
+	   var video = document.getElementById("webCamera");
+	 //video.onplay : 비디오 출력이 준비되면
+	 video.onplay = function() {
+		 //0.3초 이후에 drawImage 함수 실행
+		 setTimeout(drawImge,300);
+		};
+	 </script>
+</body>
+</html>
