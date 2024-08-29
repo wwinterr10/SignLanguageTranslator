@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http//www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>웹캠</title>
+
+<!-- axios 라이브러리 추가 -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="text/javascript">
+function camera_start() {
+	// 카메라 화면을 출력할 객체를 변수 video에 저장
+	// document.getElementById("webCamera") : id 속성이 webCamera인 객체
+	var video = document.getElementById("webCamera");
+	
+	// navigator.mediaDevices.getUserMedia : 카메라 준비가 완료되면 true
+	if (navigator.mediaDevices.getUserMedia) {
+		// video 변수에 따라 카메라 화면을 출력하도록 설정
+		navigator.mediaDevices.getUserMedia({ video : true })
+		
+		.then(function (stream) { //설정이 완료되면 비디오 화면이 stream 변수에 저장
+			// 비디오 화면이 저장된 stream을 video 변수에 출력
+			video.srcObject = stream;
+		});
+	}
+}
+</script>
+<script>
+	//웹캠 화면을 canvas에 출력하는 함수
+	  function drawImage() {
+		//document.getElementById("webCamera") : id 속성이 webCamera인 객체를 변수 video에 저장
+		var video = document.getElementById("webCamera");
+		
+		//카메라 화면을 가져와서 박스와 텍스트를 추가해서 출력할 객체
+		//document.getElementById("videoCanvas") : id 속성이 videoCanvas인 객체를 변수 canvas에 저장
+		var canvas = document.getElementById("videoCanvas");
+		
+		//canvas.getContext('2d') : canvas에 박스 텍스트를 그릴 객체를 변수 ctx에 저장
+		var ctx = canvas.getContext('2d');
+		
+		//video.videoWidth : 카메라 화면의 가로 크기
+		//canvas.width : canvas의 가로 크기로 설정
+		canvas.width = video.videoWidth;
+		
+		//video.videoHeight : 카메라 화면의 세로 크기
+		//canvas.height : canvas의 세로 크기로 설정
+		canvas.height = video.videoHeight;
+		
+		//video 화면을 canvas에 출력
+		//ctx.drawImage(video, x좌표, y좌표, 가로크기, 세로크기);ㅣ
+		ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+		//0.1초 이후에 drawImage 함수 실행
+		setTimeout(drawImage, 100);
+	}
+</script>
+<script type="text/javascript">
+	//프레임 카운트를 저장할 전역 변수
+	var frame_count = 0
+	
+	//RestServer에서 탐지한 결과를 저장할 배열
+	var detectBox = new Array();
+	
+	//웹캠 화면을 canvas에 출력하는 함수
+	  function drawImage() {
+		//document.getElementById("webCamera") : id 속성이 webCamera인 객체를 변수 video에 저장
+		var video = document.getElementById("webCamera");
+		
+		//카메라 화면을 가져와서 박스와 텍스트를 추가해서 출력할 객체
+		//document.getElementById("videoCanvas") : id 속성이 videoCanvas인 객체를 변수 canvas에 저장
+		var canvas = document.getElementById("videoCanvas");
+		
+		//canvas.getContext('2d') : canvas에 박스 텍스트를 그릴 객체를 변수 ctx에 저장
+		var ctx = canvas.getContext('2d');
+		
+		//video.videoWidth : 카메라 화면의 가로 크기
+		//canvas.width : canvas의 가로 크기로 설정
+		canvas.width = video.videoWidth;
+		
+		//video.videoHeight : 카메라 화면의 세로 크기
+		//canvas.height : canvas의 세로 크기로 설정
+		canvas.height = video.videoHeight;
+		
+		//video 화면을 canvas에 출력
+		//ctx.drawImage(video, x좌표, y좌표, 가로크기, 세로크기);
+		ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+		
+		//캔버스의 이미지를 canvas_img에 저장
+		//canvas.toDataURL(이미지타입, 이미지 품질 0~1 사이값 1이 가장 품질이 높음) : 캔버스 이미지 리턴
+		var canvas_img = canvas.toDataURL("image/jpeg", 1.0);
+		//console.log("canvas_img="+canvas_img);
+		
+		//글자색
+		//ctx.fillStyle = "blue";
+		//ctx.lineWidth =1; //텍스트 외각선의 굵기를 1픽셀로 설정
+		//ctx.font = "20px arial"; //20픽셀로 arial 글씨체를 적용
+		//(20,40) 중심에 "yolo 클래스를 출력할 겁니다" 라는 텍스트 그림
+		//ctx.fillText ("yolo 클래스를 출력할 겁니다", 20,40);
+		
+		//var x1 = 0;
+		//var y1 =0;
+		//var x2 = 300;
+		//vary2 = 400;
+		
+		//canvas에 사각형을 그림
+		//ctx.rect(시작x좌표, 시작y좌표, 끝x좌표, 끝y좌표)
+		//ctx.rect(x1,y1,x2,y2);
+		//사각형 선 두께
+		//ctx.lineWidth = "6";
+		//사각형 색
+		//ctx.strokeStyle = "red";
+		//실선으로 그림
+		//ctx.stroke();
+		
+		console.log("detectBox.length=",detectBox.length);
+		
+		//detectBox에 저장된 탐지 객체에 개수만큼 반복해서 그림
+		for(var i=0; i<detectBox.length; i++) {
+			console.log("detectBox.loop");
+			console.log("i=",i)
+			//i번째 탐지 정보를 box에 저장
+			var box = detectBox[i];
+			console.log("box=",box);
+			//클래스
+			var cls = box.cls
+			//확률
+			var conf = box.conf
+			//탐지된 left를 x1에 대입
+			var x1 = box.left
+			//탐지된 top을 y1에 대입
+			var y1 = box.top
+			//탐지된 right를 x2에 대입
+			var x2 = box.right
+			//탐지된 bottom을 y2에 대입
+			var y2 = box.bottom
+			
+			//글자색
+			ctx.fillStyle = "red";
+			ctx.lineWidth = 1; //텍스트 외각선의 굵기를 1픽셀로 설정
+			ctx.font = "20px arial"; //20픽셀로 arial 글씨체 적용
+			//x1+30, y1+30 중심에 텍스트 그림
+			ctx.fillText (cls+":"+conf, x1+30, y1+30);
+			
+			//canvas에 사각형을 그림
+			//ctx.rect(시작x좌표, 시작y2좌표, 끝x좌표, 끝y좌표)
+			ctx.rect(x1,y1,x2,y2);
+			
+			//사각형 선 두께
+			ctx.lineWidth = "6";
+			//사각형 색
+			ctx.strokeStyle ="red";
+			//실선으로 그림
+			ctx.stroke();
+		}
+		//프레임 카운트 1증가
+		frame_count = frame_count + 1;
+		
+		//24번째 프레임일 때
+		if (frame_count == 24) {
+			//frame_count를 0으로 초기화
+			frame_count = 0;
+		
+		
+			//refresh없이 백엔드를 호출하는 axios 생성
+			axios({
+				   method: "post", //백엔드 호출 방식 get, post
+				   
+				   url: "sendImage.do", //백엔드 컨트롤러의 url
+				   
+				   data:{"img_data":canvas_img}, //.백엔드로 전송할 메시지
+				   
+				   headers: { 'Content_Type': "image/jpeg" } //백엔드로 전송할 이미지 타입
+				   
+				   })
+				.then(function(response) { //백엔드 호출이 끝나면 실행되는 부분 백엔드에서 리턴한 값은 response에 저장
+					//백엔드에서 리턴한 값 출력 객체 타입
+					console.log("response="+response);
+					//백엔드에서 리턴한 값을 문자열로 변화 JSON.stringify()
+					console.log("JSON.stringify(response.data)="+JSON.stringify(response.data));
+					
+					//detectBox.splice(삭제할 시작 인덱스, 삭제할 데이터 개수) : detectBox에 저장된 데이터 삭제
+					//detectBox.length : detectBox에 저장된 데이터 수
+					//detectBox.splice(0, detectBox.length) : detectBox인덱스 0부터 모든 데이터 삭제
+					detectBox.splice(0, detectBox.length);
+					
+					console.log("response.data.length=",response.data.length);
+					//탐지된 데이터의 수만큼 반복
+					for(var i=0; i<response.data.length; i++) {
+					
+						l = response.data[i].left;   //응답데이터의 left
+						t = response.data[i].top;    //응답데이터의 top
+						r = response.data[i].right;  //응답데이터의 right
+						b = response.data[i].bottom; //응답데이터의 bottom
+						//응답데이터 클래스명
+						cl = response.data[i].cls;
+						co = response.data[i].conf;  //응답데이터의 conf
+						//탐지 정보를 저장하는 객체
+						var detect = {"left":l, "top":t,"right":r, "bottom":b, "cls":cl, "conf":co};
+						//detectBox.length : detectBox의 마지막 인덱스
+						//배열 detectBox의 마지막에 탐지 정보 추가
+						detectBox[detectBox.length] = detect;
+						console.log("detectBox=",detectBox);
+					}//end for
+			});
+		}
+		//1000 -> 1초
+		//1000/24초 이후에 drawImage 함수 실행
+		//1초에 24번 실행
+		setTimeout(drawImage, 1000/24);
+	}
+</script>
+</head>
+<body onload="camera_start()">
+	<h3>webcam.html</h3>
+	<!-- /*
+	웹 카메라를 출력할 객체
+	autoplay="true" : 웹 카메라 출력 자동 시작
+	
+	style="display : none" 화면에 출력 안함
+	*/ -->
+	
+	<video autoplay="true" id="webCamera" style="display : none"></video><br/>
+	
+	<!-- /*
+		 웹 카메라 화면을 출력하는 id속성 webCamera 객체의 화면을 가져와서 한번 더 출력할 객체
+    */-->
+    <canvas id="videoCanvas" style="background-color : green;"></canvas>
+    
+    <script type ="text/javascript">
+    //카메라 화면을 출력할 객체를 변수 video에 저장
+    //document.getElementById("webCamera") : id 속성이 webCamera인 객체
+      var video = document.getElementById("webCamera");
+    //video.onplay : 비디오 출력이 준비되면
+      video.onplay = function() {
+    	//0.3초 이후에 drawImage 함수 실행
+    	setTimeout(drawImage, 300);
+    };
+    </script>
+</body>
+</html>
