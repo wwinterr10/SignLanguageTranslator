@@ -1,3 +1,7 @@
 demo/** linguist-documentation=false
 demo/** linguist-vendored=false
+* linguist-vendored
 *.ipynb linguist-detectable=false
+*.java linguist-vendored=false
+*.py linguist-vendored=false
+*.html linguist-vendored=false
